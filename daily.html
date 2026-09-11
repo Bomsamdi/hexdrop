@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hex Drop — Daily Challenge</title>
+<meta name="description" content="One Hex Drop board a day, the same for everyone. See the run, then play today's board.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hex Drop">
+<meta property="og:title" content="Hex Drop — Daily Challenge">
+<meta property="og:description" content="One board a day, the same for everyone.">
+<meta property="og:image" content="https://bomsamdi.github.io/hexdrop/assets/logo-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div class="hero">
+    <img src="assets/logo-512.png" alt="Hex Drop logo">
+    <h1 id="day">HEX DROP</h1>
+    <p class="muted" id="sub">Daily Challenge</p>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <p id="score" style="font-size:40px;font-weight:900;margin:4px 0"></p>
+    <pre id="grid" style="font-size:26px;line-height:1.25;margin:8px 0;font-family:inherit"></pre>
+    <p class="muted" id="streak"></p>
+  </div>
+
+  <p style="text-align:center;margin-top:22px">
+    <a id="play" class="cta" href="#">PLAY TODAY'S BOARD</a>
+  </p>
+  <p class="muted" style="text-align:center;font-size:13px">
+    <a href="index.html">I don't have the game yet</a>
+  </p>
+
+  <footer>
+    <nav><a href="index.html">Home</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></nav>
+    <p>© 2026 Bartosz Wróbel. Hex Drop is an independent game.</p>
+  </footer>
+</main>
+
+<script>
+// The grid is packed as one digit per cleared turn; the same mapping lives in
+// packages/hexdrop_engine/lib/src/daily_grid.dart. Keep the two in step.
+const GLYPHS = ['🟦', '🟩', '🟨', '🟧', '🟥'];
+const PER_ROW = 5;
+const MAX_ROWS = 6;
+
+function renderGrid(packed) {
+  const combos = (packed || '').split('').filter(c => c >= '0' && c <= '9');
+  if (!combos.length) return '';
+  const shown = PER_ROW * MAX_ROWS;
+  const glyphs = combos.slice(0, shown)
+    .map(c => GLYPHS[Math.min(Math.max(Number(c) - 1, 0), GLYPHS.length - 1)]);
+  const rows = [];
+  for (let i = 0; i < glyphs.length; i += PER_ROW) {
+    rows.push(glyphs.slice(i, i + PER_ROW).join(''));
+  }
+  if (combos.length > shown) rows.push('+' + (combos.length - shown));
+  return rows.join('\n');
+}
+
+const params = new URLSearchParams(location.search);
+const day = params.get('d');
+const score = params.get('s');
+const streak = params.get('k');
+
+if (day) {
+  document.getElementById('day').textContent = 'DAILY #' + day;
+  document.getElementById('sub').textContent = 'One board a day, the same for everyone.';
+}
+document.getElementById('score').textContent = score ? score + ' pts' : '';
+document.getElementById('grid').textContent = renderGrid(params.get('g'));
+document.getElementById('streak').textContent = streak ? '🔥 ' + streak + '-day streak' : '';
+
+// Try the app first; if nothing takes over the tab, fall back to the page
+// that explains what this is.
+document.getElementById('play').addEventListener('click', function (e) {
+  e.preventDefault();
+  const started = Date.now();
+  setTimeout(function () {
+    if (Date.now() - started < 1600 && !document.hidden) {
+      location.href = 'index.html';
+    }
+  }, 1200);
+  location.href = 'hexdrop://daily/' + (day || '');
+});
+</script>
+</body>
+</html>
